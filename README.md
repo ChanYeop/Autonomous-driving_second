@@ -1,5 +1,5 @@
-# [AurixRacer](./docs/index.md)
-## Purpose & Scope
+# [AurixRacer_Second](./docs/index.md)
+## 라인인식을 위한 알고리즘
 
 * 지능형 모형차 대회에 사용할 수 있는 Software Platform 을 제공
 * 아울러 AURIX를 활용한 학부생 실습용 프로젝트 예제

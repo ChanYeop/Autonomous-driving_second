@@ -47,29 +47,42 @@ void appTaskfu_1ms(void)
 void appTaskfu_10ms(void)
 {
 	task_cnt_10m++;
+
+	if(school_zone_timer < 10000)
+		school_zone_timer++;
+
+	if(turning == TRUE && turn_timer < 10000)
+		turn_timer++;
+
 	if(task_cnt_10m == 1000){
 		task_cnt_10m = 0;
 	}
 
-	if(task_cnt_10m%2 == 0){
-		BasicLineScan_run();
-		InfineonRacer_detectLane();
-		BasicPort_run();
-		BasicGtmTom_run();
-		BasicVadcBgScan_run();
+	if(task_cnt_10m%2 == 0)
+	{
+		BasicVadcBgScan_run();//적외선 센서 구동
+		V2Distance();//적외선센서 출력 거리 계산
+
+		BasicLineScan_run();//라인 읽어들임
+		InfineonRacer_detectLane();//라인 검출
 
 		if(IR_Ctrl.basicTest == FALSE){
 			#if CODE == CODE_HAND
-				InfineonRacer_control();
+				InfineonRacer_control(); //dc모터, 서보모터 PID 제어 코드. IR_Motor.Motor0Vol 와 IR_Srv.Angle에 값을 줌
 			#elif CODE == CODE_ERT
 				IR_Controller_step();
 			#else
 
 			#endif
 		}
-		AsclinShellInterface_runLineScan();
-	}
 
+		BasicPort_run();//설정해놓은 GPIO에 지정된 신호 출력
+		BasicGtmTom_run();//InfineonRacer_control()에서 주는 IR_Motor.Motor0Vol 와 IR_Srv.Angle값을 바탕으로 모터, 서보 구동
+
+		AsclinShellInterface_runLineScan();
+		AsclinShellInterface_runDisScan();
+		AsclinShellInterface_runEncScan();
+	}
 }
 
 void appTaskfu_100ms(void)
@@ -94,7 +107,6 @@ void appTaskfu_1000ms(void)
 	if(task_cnt_1000m == 1000){
 		task_cnt_1000m = 0;
 	}
-
 }
 
 void appTaskfu_idle(void){
@@ -107,7 +119,7 @@ void appTaskfu_idle(void){
 
 }
 
-void appIsrCb_1ms(void){
+void appIsrCb_100us(void){
 	BasicGpt12Enc_run();
 }
 

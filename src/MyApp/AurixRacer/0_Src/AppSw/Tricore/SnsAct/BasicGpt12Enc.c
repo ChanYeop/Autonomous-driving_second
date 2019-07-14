@@ -18,6 +18,7 @@
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
+#define ABS(x) ( ((x)<0)?-(x):(x) ) //절대값
 
 /******************************************************************************/
 /*--------------------------------Enumerations--------------------------------*/
@@ -33,6 +34,14 @@ typedef struct
 
 Basic_Gpt12Enc_t g_Gpt12Enc;
 IR_Encoder_t IR_Encoder;
+
+#define MEDIAN_SIZE 10
+#define EMA_A 0.4 //로우패스필터 상수
+
+float32 encLPF = 0;
+uint32 filterIdx = 0; //filter index
+float32 median_buffer[MEDIAN_SIZE];
+float32 median_sum = 0; //이동 평균 필터 관련 변수들
 
 /******************************************************************************/
 /*-------------------------Function Prototypes--------------------------------*/
@@ -117,19 +126,19 @@ void BasicGpt12Enc_init(void)
         /* Test implementation with T2 as core */
         config.base.offset                    = 100;
         config.base.reversed                  = FALSE;
-        config.base.resolution                = 32;// 2048;
+        config.base.resolution                = 200;// 2048;
         config.base.periodPerRotation         = 1;
         config.base.resolutionFactor          = IfxStdIf_Pos_ResolutionFactor_fourFold;
-        config.base.updatePeriod              = 1.0e-3; //100e-6;
-        config.base.speedModeThreshold        = 200;
+        config.base.updatePeriod              = 1.0e-4; //100e-6; 원래 1.0e-3
+        config.base.speedModeThreshold        = 200; //원래 200
         config.base.minSpeed                  = 10;
         config.base.maxSpeed                  = 500;
         config.zeroIsrPriority                = ISR_PRIORITY(INTERRUPT_INCRINC_ZERO);
         config.zeroIsrProvider                = ISR_PROVIDER(INTERRUPT_INCRINC_ZERO);
         config.pinA                           = &IfxGpt120_T2INA_P00_7_IN;
         config.pinB                           = &IfxGpt120_T2EUDA_P00_8_IN;
-        config.pinZ                           = &IfxGpt120_T4EUDA_P00_9_IN;
-        config.pinMode                        = IfxPort_InputMode_noPullDevice;
+        config.pinZ                           = (IfxGpt12_TxIn_In *)&IfxGpt120_T4EUDA_P00_9_IN;
+        config.pinMode                        = IfxPort_InputMode_pullUp;
 
         config.base.speedFilterEnabled        = TRUE;
         config.base.speedFilerCutOffFrequency = config.base.maxSpeed / 2 * IFX_PI * 10;
@@ -146,7 +155,22 @@ void BasicGpt12Enc_init(void)
 void BasicGpt12Enc_run(void){
 	IfxGpt12_IncrEnc_update(&g_Gpt12Enc.incrEnc);
 
+	//로우패스필터 + 이동평균 필터 추가(speed만)//
 	IR_Encoder.speed       = IfxGpt12_IncrEnc_getSpeed(&g_Gpt12Enc.incrEnc);
+	if(ABS(IR_Encoder.speed - encLPF) > 50)
+	{
+		IR_Encoder.speed = encLPF;
+	}
+	encLPF = IR_Encoder.speed * EMA_A +  encLPF * (1 - EMA_A); //로우 패스 필터
+
+	filterIdx = (filterIdx + 1) % MEDIAN_SIZE;
+	median_sum -= median_buffer[filterIdx];
+	median_buffer[filterIdx] = encLPF;
+	median_sum += median_buffer[filterIdx]; //이동 평균 필터
+
+	IR_Encoder.speed = median_sum / MEDIAN_SIZE;
+	///////////////////////////////////////////////
+
 	IR_Encoder.rawPosition = (float32) IfxGpt12_IncrEnc_getRawPosition(&g_Gpt12Enc.incrEnc);
 	IR_Encoder.direction   = IfxGpt12_IncrEnc_getDirection(&g_Gpt12Enc.incrEnc);
 }

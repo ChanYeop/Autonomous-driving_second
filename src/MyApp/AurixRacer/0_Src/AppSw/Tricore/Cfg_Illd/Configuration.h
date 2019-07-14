@@ -17,16 +17,16 @@
 #include <_PinMap/IfxScu_PinMap.h>
 #include <_PinMap/IfxGtm_PinMap.h>
 
-/* APPLICATION_KIT_TC237 혹은 SHIELD_BUDDY 중에 한가지만 선택*/
+/* APPLICATION_KIT_TC237 �샊�� SHIELD_BUDDY 以묒뿉 �븳媛�吏�留� �꽑�깮*/
 #define APPLICATION_KIT_TC237 	1
 #define SHIELD_BUDDY 			2
 
-/* SHELL_ASCLIN assign, ASCLIN0 혹은 ASCLIN3 중에 한가지만 선택 */
+/* SHELL_ASCLIN assign, ASCLIN0 �샊�� ASCLIN3 以묒뿉 �븳媛�吏�留� �꽑�깮 */
 #define ASCLIN0			0		// For HC06 Bluetooth module
 #define ASCLIN3			3		// For USB
 #define SHELL_ASCLIN	ASCLIN3
 
-/* 다음 3개중의 하나만 정의해서 사용*/
+/* �떎�쓬 3媛쒖쨷�쓽 �븯�굹留� �젙�쓽�빐�꽌 �궗�슜*/
 #define CODE_HAND	0		// Hand code : default
 #define CODE_ERT	1		// Using embedded coder
 #define CODE_SCILAB	2		// Using SciLab
@@ -116,7 +116,7 @@
 
 #elif BOARD == SHIELD_BUDDY
 
-	#define CFG_ASC0_BAUDRATE       (115200.0)                   /**< \brief Define the Baudrate */
+	#define CFG_ASC0_BAUDRATE       (256000.0)                   /**< \brief Define the Baudrate */
 	#define CFG_ASC0_RX_BUFFER_SIZE (512)                        /**< \brief Define the Rx buffer size in byte. */
 	#define CFG_ASC0_TX_BUFFER_SIZE (6 * 1024)                   /**< \brief Define the Tx buffer size in byte. */
 	/** \} */
@@ -151,7 +151,10 @@
 	#define LED0						IfxPort_P00_4
 	#define LED1						IfxPort_P00_3
 	#define LED2						IfxPort_P00_2
-
+///////////////////////////////////////////////////////////////////////////
+	#define LED3						IfxPort_P00_12
+	#define LED4						IfxPort_P00_5
+///////////////////////////////////////////////////////////////////////////
 	#define PORT00_0					IfxPort_P00_0
 	#define PORT00_1					IfxPort_P00_1
 

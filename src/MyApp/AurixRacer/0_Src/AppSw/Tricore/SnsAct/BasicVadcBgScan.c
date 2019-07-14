@@ -15,7 +15,7 @@
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
 /******************************************************************************/
-#define  ADC_CHN_MAX  4
+#define  ADC_CHN_MAX  2
 
 /******************************************************************************/
 /*--------------------------------Enumerations--------------------------------*/
@@ -42,14 +42,21 @@ static uint32 adcChannelNum[ADC_CHN_MAX] = {
 };
 #elif BOARD == SHIELD_BUDDY
 static uint32 adcChannelNum[ADC_CHN_MAX] = {
-		4, 5, 6, 7
+		5, 6 /* DAC1, CANRX */
 };
 #endif
 
 
 float32 IR_AdcResult[ADC_CHN_MAX];
+float32 IR_LPF[ADC_CHN_MAX] = {0}; //로우 패스 필터 통과값
+float32 IR_Distance[ADC_CHN_MAX] = {0}; //거리값
 
+#define FILTER_SIZE 10
+#define EMA_a 0.4 //로우패스필터 상수
 
+uint32 filterIx[ADC_CHN_MAX] = {0}; //filter index
+float32 filter_buffer[ADC_CHN_MAX][FILTER_SIZE];
+float32 filter_sum[ADC_CHN_MAX] = {0};
 /******************************************************************************/
 /*-------------------------Function Prototypes--------------------------------*/
 /******************************************************************************/
@@ -150,7 +157,31 @@ void BasicVadcBgScan_run(void)
                 conversionResult = IfxVadc_Adc_getResult(&g_VadcBackgroundScan.adcChannel[chnIx]);
             } while (!conversionResult.B.VF);
 
-			IR_AdcResult[chnIx] = (float32) conversionResult.B.RESULT / 4095;
+			IR_AdcResult[chnIx] = (float32) conversionResult.B.RESULT / 4095 * 5;
 
         }
+}
+
+/*voltage to distance Conversion*/
+void V2Distance(void)
+{
+	uint32 chnIx;
+	float32 temp[ADC_CHN_MAX];
+
+	for (chnIx = 0; chnIx < ADC_CHN_MAX; chnIx++)
+	{
+		IR_LPF[chnIx] = IR_AdcResult[chnIx] * EMA_a +  IR_LPF[chnIx] * (1 - EMA_a); //로우 패스 필터
+
+		filterIx[chnIx] = (filterIx[chnIx] + 1) % FILTER_SIZE;
+		filter_sum[chnIx] -= filter_buffer[chnIx][filterIx[chnIx]];
+		filter_buffer[chnIx][filterIx[chnIx]] = IR_LPF[chnIx];
+		filter_sum[chnIx] += filter_buffer[chnIx][filterIx[chnIx]]; //이동 평균 필터
+
+		temp[chnIx] = filter_sum[chnIx] / FILTER_SIZE;
+		IR_Distance[chnIx] = (7.3700) * temp[chnIx] * temp[chnIx] * temp[chnIx] * temp[chnIx]
+							+ (-65.0356) * temp[chnIx] * temp[chnIx] * temp[chnIx]
+							+ (210.7314) * temp[chnIx] * temp[chnIx]
+							+ (-316.0783) * temp[chnIx]
+							+ (220.9207);
+	}
 }

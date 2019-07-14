@@ -15,6 +15,7 @@
 #include "Cpu0_Main.h"
 
 #include "AppTaskFu.h"
+#include "InfineonRacer.h"
 
 /******************************************************************************/
 /*-----------------------------------Macros-----------------------------------*/
@@ -34,15 +35,28 @@
 /*-----------------------------Data Structures--------------------------------*/
 /******************************************************************************/
 typedef struct{
-	boolean enable;
-	sint32	period_ms;
+   boolean enable;
+   sint32   period_ms;
 } linescan_t;
+
+typedef struct{
+   boolean enable;
+   sint32 period_ms;
+} disscan_t;
+
+typedef struct{
+   boolean enable;
+   sint32 period_ms;
+} encscan_t;
 /******************************************************************************/
 /*------------------------------Global variables------------------------------*/
 /******************************************************************************/
 
 App_AsclinShellInterface g_AsclinShellInterface; /**< \brief Demo information */
-linescan_t	g_LineScan = {FALSE, 1000};
+linescan_t   g_LineScan = {FALSE, 1000};
+disscan_t g_DisScan = {FALSE, 1000};
+encscan_t g_EncScan = {FALSE, 1000};
+
 /******************************************************************************/
 /*-------------------------Function Prototypes--------------------------------*/
 /******************************************************************************/
@@ -59,7 +73,9 @@ boolean AppShell_linescan0(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_linescan1(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_monlinescan(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_vadcbg1(pchar args, void *data, IfxStdIf_DPipe *io);
+boolean AppShell_mondis(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_enc(pchar args, void *data, IfxStdIf_DPipe *io);
+boolean AppShell_monenc(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_port00_0(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_port00_1(pchar args, void *data, IfxStdIf_DPipe *io);
 boolean AppShell_info(pchar args, void *data, IfxStdIf_DPipe *io);
@@ -98,7 +114,9 @@ const Ifx_Shell_Command AppShell_commands[] = {
     {"ls1", "      : LineScan1", &g_AsclinShellInterface,       &AppShell_linescan1,    },
     {"mls", "      : Monitoring LineScan", &g_AsclinShellInterface,       &AppShell_monlinescan,    },
     {"vadc", "     : Vadc Backgound 1", &g_AsclinShellInterface,       &AppShell_vadcbg1,    },
+   {"mdis", "     : Monitoring Distance", &g_AsclinShellInterface,       &AppShell_mondis,    },
     {"enc", "      : Encoder", &g_AsclinShellInterface,       &AppShell_enc,    },
+   {"menc", "     : Monitoring Encoder", &g_AsclinShellInterface,       &AppShell_monenc,    },
     {"p00_0", "    : Port00_0", &g_AsclinShellInterface,       &AppShell_port00_0,    },
     {"p00_1", "    : Port00_1", &g_AsclinShellInterface,       &AppShell_port00_1,    },
     {"info",   "     : Show the welcome screen",   &g_AsclinShellInterface,       &AppShell_info,      },
@@ -120,7 +138,9 @@ const Ifx_Shell_Command AppShell_commands[] = {
     {"ls1", "      : LineScan1", &g_AsclinShellInterface,       &AppShell_linescan1,    },
     {"mls", "      : Monitoring LineScan", &g_AsclinShellInterface,       &AppShell_monlinescan,    },
     {"vadc", "     : Vadc Backgound 1", &g_AsclinShellInterface,       &AppShell_vadcbg1,    },
+   {"mdis", "     : Monitoring Distance", &g_AsclinShellInterface,       &AppShell_mondis,    },
     {"enc", "      : Encoder", &g_AsclinShellInterface,       &AppShell_enc,    },
+   {"menc", "     : Monitoring Encoder", &g_AsclinShellInterface,       &AppShell_monenc,    },
     {"p00_0", "    : Port00_0", &g_AsclinShellInterface,       &AppShell_port00_0,    },
     {"p00_1", "    : Port00_1", &g_AsclinShellInterface,       &AppShell_port00_1,    },
     {"info",   "     : Show the welcome screen",   &g_AsclinShellInterface,       &AppShell_info,      },
@@ -246,33 +266,33 @@ boolean AppShell_info(pchar args, void *data, IfxStdIf_DPipe *io)
 boolean AppShell_status(pchar args, void *data, IfxStdIf_DPipe *io)
 {
 #if BOARD == APPLICATION_KIT_TC237
-	AppShell_motor0vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_motor1vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_motor0en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_motor1en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_srv(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_beeperon(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_beeperfreq(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_beepervol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led2(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_vadcbg1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_enc(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_port00_0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_port00_1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor0vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor1vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor0en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor1en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_srv(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_beeperon(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_beeperfreq(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_beepervol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led2(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_vadcbg1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_enc(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_port00_0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_port00_1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
 #elif BOARD == SHIELD_BUDDY
-	AppShell_motor0vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_motor0en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_srv(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_srvscan(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_led2(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_vadcbg1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_enc(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_port00_0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
-	AppShell_port00_1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor0vol(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_motor0en(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_srv(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_srvscan(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_led2(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_vadcbg1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_enc(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_port00_0(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
+   AppShell_port00_1(0, NULL_PTR, &g_AsclinShellInterface.stdIf.asc );
 #endif
 
     return TRUE;
@@ -280,17 +300,17 @@ boolean AppShell_status(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_motor0vol(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : m0v frac-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
-    		IR_setMotor0Vol(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Motor0Vol: %4.2f fraction"ENDL, IR_getMotor0Vol());
+       if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
+          IR_setMotor0Vol(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  Motor0Vol: %4.2f fraction"ENDL, IR_getMotor0Vol());
     }
 
     return TRUE;
@@ -300,17 +320,17 @@ boolean AppShell_motor0vol(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_motor1vol(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : m1v frac-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
-    		IR_setMotor1Vol(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Motor1Vol: %4.2f fraction"ENDL, IR_getMotor1Vol());
+       if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
+          IR_setMotor1Vol(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  Motor1Vol: %4.2f fraction"ENDL, IR_getMotor1Vol());
     }
 
     return TRUE;
@@ -319,17 +339,17 @@ boolean AppShell_motor1vol(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_motor0en(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : m0e 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &vol) == TRUE){
-    		IR_setMotor0En(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Motor0En: %4d "ENDL, IR_getMotor0En());
+       if(Ifx_Shell_parseSInt32(&args, &vol) == TRUE){
+          IR_setMotor0En(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  Motor0En: %4d "ENDL, IR_getMotor0En());
     }
 
     return TRUE;
@@ -338,17 +358,17 @@ boolean AppShell_motor0en(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_srv(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : srv frac-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
-    		IR_setSrvAngle(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  SrvAngle: %4.2f fraction"ENDL, IR_getSrvAngle());
+       if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
+          IR_setSrvAngle(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  SrvAngle: %4.2f fraction"ENDL, IR_getSrvAngle());
     }
 
     return TRUE;
@@ -357,17 +377,17 @@ boolean AppShell_srv(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_led0(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 led;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 led;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : l0 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
-    		IR_setLed0((boolean)led);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Led0: %4d "ENDL, IR_getLed0());
+       if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
+          IR_setLed0((boolean)led);
+       }
+       IfxStdIf_DPipe_print(io, "  Led0: %4d "ENDL, IR_getLed0());
     }
 
     return TRUE;
@@ -375,17 +395,17 @@ boolean AppShell_led0(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_led1(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 led;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 led;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : l1 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
-    		IR_setLed1((boolean)led);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Led1: %4d "ENDL, IR_getLed1());
+       if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
+          IR_setLed1((boolean)led);
+       }
+       IfxStdIf_DPipe_print(io, "  Led1: %4d "ENDL, IR_getLed1());
     }
 
     return TRUE;
@@ -393,17 +413,17 @@ boolean AppShell_led1(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_led2(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 led;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 led;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : l2 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
-    		IR_setLed2((boolean)led);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Led2: %4d "ENDL, IR_getLed2());
+       if(Ifx_Shell_parseSInt32(&args, &led) != FALSE){
+          IR_setLed2((boolean)led);
+       }
+       IfxStdIf_DPipe_print(io, "  Led2: %4d "ENDL, IR_getLed2());
     }
 
     return TRUE;
@@ -411,87 +431,128 @@ boolean AppShell_led2(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_monlinescan(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 period_ms;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 period_ms;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : mls period_ms"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &period_ms) != FALSE){
-    		g_LineScan.period_ms = period_ms;
-    		g_LineScan.enable = TRUE;
-    	}else
-    	{
-    		g_LineScan.enable = FALSE;
-    	}
-    	IfxStdIf_DPipe_print(io, "  mls: %4d "ENDL, g_LineScan.period_ms);
+       if(Ifx_Shell_parseSInt32(&args, &period_ms) != FALSE){
+          g_LineScan.period_ms = period_ms;
+          g_LineScan.enable = TRUE;
+       }else
+       {
+          g_LineScan.enable = FALSE;
+       }
+       IfxStdIf_DPipe_print(io, "  mls: %4d "ENDL, g_LineScan.period_ms);
     }
 
     return TRUE;
 }
 
 boolean AppShell_linescan0(pchar args, void *data, IfxStdIf_DPipe *io){
-	sint32 i;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 i;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : ls0 "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  LineScan0 results "ENDL);
-    	for(i = 0; i<127; i++){
-    		IfxStdIf_DPipe_print(io, "%5d,",IR_LineScan.adcResult[0][i]);
-    	}
-		IfxStdIf_DPipe_print(io, "%5d"ENDL,IR_LineScan.adcResult[0][i]);
+       IfxStdIf_DPipe_print(io, "  LineScan0 results "ENDL);
+       for(i = 0; i<127; i++){
+          IfxStdIf_DPipe_print(io, "%5d,",IR_LineScan.adcResult[0][i]);
+       }
+      IfxStdIf_DPipe_print(io, "%5d"ENDL,IR_LineScan.adcResult[0][i]);
     }
     return TRUE;
 }
 
 boolean AppShell_linescan1(pchar args, void *data, IfxStdIf_DPipe *io){
-	sint32 i;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 i;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : ls1 "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  LineScan1 results "ENDL);
-    	for(i = 0; i<127; i++){
-    		IfxStdIf_DPipe_print(io, "%5d,",IR_LineScan.adcResult[1][i]);
-    	}
-		IfxStdIf_DPipe_print(io, "%5d"ENDL,IR_LineScan.adcResult[1][i]);
+       IfxStdIf_DPipe_print(io, "  LineScan1 results "ENDL);
+       for(i = 0; i<127; i++){
+          IfxStdIf_DPipe_print(io, "%5d,",IR_LineScan.adcResult[1][i]);
+       }
+      IfxStdIf_DPipe_print(io, "%5d"ENDL,IR_LineScan.adcResult[1][i]);
     }
     return TRUE;
 }
 
+boolean AppShell_mondis(pchar args, void *data, IfxStdIf_DPipe *io)
+{
+   sint32 period_ms;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+    {
+        IfxStdIf_DPipe_print(io, "  Syntax     : mdis period_ms"ENDL);
+    }
+    else
+    {
+       if(Ifx_Shell_parseSInt32(&args, &period_ms) != FALSE){
+          g_DisScan.period_ms = period_ms;
+          g_DisScan.enable = TRUE;
+       }else
+       {
+          g_DisScan.enable = FALSE;
+       }
+       IfxStdIf_DPipe_print(io, "  mdis: %4d "ENDL, g_DisScan.period_ms);
+    }
+
+    return TRUE;
+}
+
 boolean AppShell_vadcbg1(pchar args, void *data, IfxStdIf_DPipe *io){
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : vadc "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  Vadc ");
-    	IfxStdIf_DPipe_print(io, "  Ch0: %4.2f,",IR_getUsrAdcChn0());
-    	IfxStdIf_DPipe_print(io, "  Ch1: %4.2f,",IR_getUsrAdcChn1());
-    	IfxStdIf_DPipe_print(io, "  Ch2: %4.2f,",IR_getUsrAdcChn2());
-    	IfxStdIf_DPipe_print(io, "  Ch3: %4.2f,"ENDL,IR_getUsrAdcChn3());
+       IfxStdIf_DPipe_print(io, "  Vadc ");
+       IfxStdIf_DPipe_print(io, "  Ch0: %4.2f,", IR_getUsrAdcChn0());
+       IfxStdIf_DPipe_print(io, "  Ch1: %4.2f"ENDL, IR_getUsrAdcChn1());
     }
     return TRUE;
 }
 
+boolean AppShell_monenc(pchar args, void *data, IfxStdIf_DPipe *io)
+{
+   sint32 period_ms;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+    {
+        IfxStdIf_DPipe_print(io, "  Syntax     : menc period_ms"ENDL);
+    }
+    else
+    {
+       if(Ifx_Shell_parseSInt32(&args, &period_ms) != FALSE){
+          g_EncScan.period_ms = period_ms;
+          g_EncScan.enable = TRUE;
+       }else
+       {
+          g_EncScan.enable = FALSE;
+       }
+       IfxStdIf_DPipe_print(io, "  menc: %4d "ENDL, g_EncScan.period_ms);
+    }
+
+    return TRUE;
+}
 
 boolean AppShell_enc(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : enc "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  Encoder speed: %5d, position: %4d, direction: %1d "ENDL,
-    			IR_getEncSpeed(), IR_getEncPosition(), IR_getEncDirection());
+       IfxStdIf_DPipe_print(io, "  Encoder speed: %5d, position: %4d, direction: %1d "ENDL,
+             (sint32)IR_getEncSpeed(), (sint32)IR_getEncPosition(), IR_getEncDirection());
     }
 
     return TRUE;
@@ -499,13 +560,13 @@ boolean AppShell_enc(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_port00_0(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : p00_0 "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  Port00_0: %4d "ENDL, IR_getPort00_0());
+       IfxStdIf_DPipe_print(io, "  Port00_0: %4d "ENDL, IR_getPort00_0());
     }
 
     return TRUE;
@@ -513,13 +574,13 @@ boolean AppShell_port00_0(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_port00_1(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : p00_0 "ENDL);
     }
     else
     {
-    	IfxStdIf_DPipe_print(io, "  Port00_0: %4d "ENDL, IR_getPort00_1());
+       IfxStdIf_DPipe_print(io, "  Port00_0: %4d "ENDL, IR_getPort00_1());
     }
 
     return TRUE;
@@ -528,17 +589,17 @@ boolean AppShell_port00_1(pchar args, void *data, IfxStdIf_DPipe *io)
 #if BOARD == APPLICATION_KIT_TC237
 boolean AppShell_motor1en(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : m1e 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &vol) == TRUE){
-    		IR_setMotor1En(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Motor1En: %4d "ENDL, IR_getMotor1En());
+       if(Ifx_Shell_parseSInt32(&args, &vol) == TRUE){
+          IR_setMotor1En(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  Motor1En: %4d "ENDL, IR_getMotor1En());
     }
 
     return TRUE;
@@ -546,17 +607,17 @@ boolean AppShell_motor1en(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_beeperon(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	sint32 beeper;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   sint32 beeper;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : bpon 0/1"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseSInt32(&args, &beeper) != FALSE){
-    		IR_setBeeperOn((boolean)beeper);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Beeper On: %4d "ENDL, IR_getBeeperOn());
+       if(Ifx_Shell_parseSInt32(&args, &beeper) != FALSE){
+          IR_setBeeperOn((boolean)beeper);
+       }
+       IfxStdIf_DPipe_print(io, "  Beeper On: %4d "ENDL, IR_getBeeperOn());
     }
 
     return TRUE;
@@ -564,17 +625,17 @@ boolean AppShell_beeperon(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_beeperfreq(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 freq;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 freq;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : bpf float-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &freq) == TRUE){
-    		IR_setBeeperFreq(freq);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Beeper Freq: %7.1f "ENDL, IR_getBeeperFreq());
+       if(Ifx_Shell_parseFloat32(&args, &freq) == TRUE){
+          IR_setBeeperFreq(freq);
+       }
+       IfxStdIf_DPipe_print(io, "  Beeper Freq: %7.1f "ENDL, IR_getBeeperFreq());
     }
 
     return TRUE;
@@ -582,17 +643,17 @@ boolean AppShell_beeperfreq(pchar args, void *data, IfxStdIf_DPipe *io)
 
 boolean AppShell_beepervol(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : bpv frac-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
-    		IR_setBeeperVol(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  Beeper Volume: %4.2f "ENDL, IR_getBeeperVol());
+       if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
+          IR_setBeeperVol(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  Beeper Volume: %4.2f "ENDL, IR_getBeeperVol());
     }
 
     return TRUE;
@@ -601,17 +662,17 @@ boolean AppShell_beepervol(pchar args, void *data, IfxStdIf_DPipe *io)
 #elif BOARD == SHIELD_BUDDY
 boolean AppShell_srvscan(pchar args, void *data, IfxStdIf_DPipe *io)
 {
-	float32 vol;
-	if (Ifx_Shell_matchToken(&args, "?") != FALSE)
+   float32 vol;
+   if (Ifx_Shell_matchToken(&args, "?") != FALSE)
     {
         IfxStdIf_DPipe_print(io, "  Syntax     : srvscan frac-value"ENDL);
     }
     else
     {
-    	if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
-    		IR_setSrvScanAngle(vol);
-    	}
-    	IfxStdIf_DPipe_print(io, "  SrvScanAngle: %4.2f fraction"ENDL, IR_getSrvScanAngle());
+       if(Ifx_Shell_parseFloat32(&args, &vol) == TRUE){
+          IR_setSrvScanAngle(vol);
+       }
+       IfxStdIf_DPipe_print(io, "  SrvScanAngle: %4.2f fraction"ENDL, IR_getSrvScanAngle());
     }
 
     return TRUE;
@@ -714,18 +775,48 @@ void AsclinShellInterface_run(void)
 
 void AsclinShellInterface_runLineScan(void)
 {
-	sint32 i;
-	static sint32 cnt;
+   sint32 i;
+   static sint32 cnt;
 
-	if(g_LineScan.enable == TRUE)
-	{
-		cnt--;
-		if(cnt < 0){
-			cnt = (sint32) g_LineScan.period_ms/10;
+   if(g_LineScan.enable == TRUE)
+   {
+      cnt--;
+      if(cnt < 0){
+         cnt = (sint32) g_LineScan.period_ms/20;
 
-			for(i = 0; i<128; i++){
-			IfxStdIf_DPipe_print(&g_AsclinShellInterface.stdIf.asc, "%5d,%5d"ENDL,IR_LineScan.adcResult[0][i], IR_LineScan.adcResult[1][i]);
-			}
-		}
-	}
+         for(i = 0; i<128 * 2; i++){
+         IfxStdIf_DPipe_print(&g_AsclinShellInterface.stdIf.asc, "%5d,%5d"ENDL,
+               (i < 128) ? IR_LineScan.adcResult[0][i] : IR_LineScan.adcResult[1][i - 128],
+                     (i < 128) ? IR_LineScan.line[0][i] : IR_LineScan.line[1][i - 128]);
+         }
+      }
+   }
+}
+
+void AsclinShellInterface_runDisScan(void)
+{
+   static sint32 cnt;
+
+   if(g_DisScan.enable == TRUE)
+   {
+      cnt--;
+      if(cnt < 0){
+         cnt = (sint32) g_DisScan.period_ms/20;
+         IfxStdIf_DPipe_print(&g_AsclinShellInterface.stdIf.asc, "%5.2f,%5.2f"ENDL, IR_Distance[0], IR_Distance[1]);
+      }
+   }
+}
+
+void AsclinShellInterface_runEncScan(void)
+{
+   static sint32 cnt;
+
+   if(g_EncScan.enable == TRUE)
+   {
+      cnt--;
+      if(cnt < 0){
+         cnt = (sint32) g_EncScan.period_ms/20;
+         IfxStdIf_DPipe_print(&g_AsclinShellInterface.stdIf.asc, "%5d,%4d,%1d,%4d"ENDL, (sint32)IR_getEncSpeed(), (sint32)IR_getEncPosition(), IR_getEncDirection(), PID_dc.target);
+      }
+   }
 }

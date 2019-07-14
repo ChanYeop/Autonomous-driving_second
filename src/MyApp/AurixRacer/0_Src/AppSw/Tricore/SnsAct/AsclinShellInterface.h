@@ -79,5 +79,7 @@ IFX_EXTERN App_AsclinShellInterface g_AsclinShellInterface;
 IFX_EXTERN void AsclinShellInterface_init(void);
 IFX_EXTERN void AsclinShellInterface_run(void);
 IFX_EXTERN void AsclinShellInterface_runLineScan(void);
+IFX_EXTERN void AsclinShellInterface_runDisScan(void);
+IFX_EXTERN void AsclinShellInterface_runEncScan(void);
 
 #endif

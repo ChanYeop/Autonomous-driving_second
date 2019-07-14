@@ -26,6 +26,10 @@
 #define IR_getLed0() IR_Port.led0
 #define IR_getLed1() IR_Port.led1
 #define IR_getLed2() IR_Port.led2
+/////////////////////////////////////////////////////////////////////////
+#define IR_getLed3() IR_Port.led3
+#define IR_getLed4() IR_Port.led4
+/////////////////////////////////////////////////////////////////////////
 #define IR_getPort00_0() IR_Port.port00_0
 #define IR_getPort00_1() IR_Port.port00_1
 
@@ -48,6 +52,8 @@ typedef struct
 	volatile boolean led0;
 	volatile boolean led1;
 	volatile boolean led2;
+	volatile boolean led3;
+	volatile boolean led4;
 	volatile boolean port00_0;
 	volatile boolean port00_1;
 
@@ -84,6 +90,8 @@ IFX_EXTERN IR_MotorEn_t IR_MotorEn;
 IFX_EXTERN void IR_setLed0(boolean led);
 IFX_EXTERN void IR_setLed1(boolean led);
 IFX_EXTERN void IR_setLed2(boolean led);
+IFX_EXTERN void IR_setLed3(boolean led);
+IFX_EXTERN void IR_setLed4(boolean led);
 
 #if BOARD == APPLICATION_KIT_TC237
 IFX_EXTERN void IR_setMotor0En(boolean enable);

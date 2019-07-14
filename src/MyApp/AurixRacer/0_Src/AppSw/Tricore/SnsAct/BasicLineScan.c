@@ -148,6 +148,10 @@ void BasicLineScan_init(void)
  */
 void BasicLineScan_run(void)
 {
+	float32 current;
+	float32 previous;
+	uint32 value;
+
 	uint32 chnIx;
 	uint32 idx;
 
@@ -187,10 +191,23 @@ void BasicLineScan_run(void)
                 conversionResult = IfxVadc_Adc_getResult(&g_VadcAutoScan.adcChannel[chnIx]);
             } while (!conversionResult.B.VF);
 
-            IR_LineScan.adcResult[chnIx][idx] = conversionResult.B.RESULT;
+            ////////////////////////////////// LOW PASS FILTER PART ///////////////////////////
+            if(idx == 0)
+            {
+            	IR_LineScan.adcResult[chnIx][idx] = conversionResult.B.RESULT;
+            }
+            else
+            {
+            	current = conversionResult.B.RESULT;
+            	previous = IR_LineScan.adcResult[chnIx][idx-1];
+            	value = current * 0.5 + previous * 0.5;
+            	IR_LineScan.adcResult[chnIx][idx] = value;
+            }
+            ///////////////////////////////////////////////////////////////////////////////////
         }
-
+        IR_LineScan.line[0][idx] = IR_LineScan.line[1][idx] = 0;
 	}
+	IR_LineScan.lineCount = 0;
 
 	IfxPort_setPinState(TSL1401_SI.port, TSL1401_SI.pinIndex, IfxPort_State_low);
 	IfxPort_setPinState(TSL1401_CLK.port, TSL1401_CLK.pinIndex, IfxPort_State_low);

@@ -453,7 +453,6 @@ void GtmTomSrvScan_run(void)
 
 #endif
 
-
 void BasicGtmTom_run(void)
 {
 	GtmTomPwmHl_run();

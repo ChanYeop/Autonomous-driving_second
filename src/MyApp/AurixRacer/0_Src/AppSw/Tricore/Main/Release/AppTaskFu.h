@@ -26,6 +26,6 @@ void appTaskfu_10ms(void);
 void appTaskfu_100ms(void);
 void appTaskfu_1000ms(void);
 void appTaskfu_idle(void);
-void appIsrCb_1ms(void);
+void appIsrCb_100us(void);
 
 #endif /* APPTASKFU_H_ */

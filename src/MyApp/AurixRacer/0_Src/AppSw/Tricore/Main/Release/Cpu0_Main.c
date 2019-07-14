@@ -90,10 +90,16 @@ int core0_main(void)
     /* Demo init */
     BasicStm_init();
 
+
+        //IR_setMotor0En(TRUE);
+
+
+
     /* background endless loop */
     while (TRUE)
     {
         BasicStm_run();
+
     }
 
     return 0;

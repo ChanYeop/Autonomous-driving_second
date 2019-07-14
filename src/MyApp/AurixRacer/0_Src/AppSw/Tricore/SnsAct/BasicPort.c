@@ -72,9 +72,13 @@ void BasicPort_init(void)
     /* disable interrupts */
     boolean interruptState = IfxCpu_disableInterrupts();
 
-    IR_Port.led0 = TRUE;
-    IR_Port.led1 = TRUE;
-    IR_Port.led2 = TRUE;
+    IR_Port.led0 = FALSE;
+    IR_Port.led1 = FALSE;
+    IR_Port.led2 = FALSE;
+    IR_Port.led3 = FALSE;
+    IR_Port.led4 = FALSE;
+
+    IR_setMotor0En(TRUE);
 
     /* LED Port output */
     IfxPort_setPinMode(LED0.port, LED0.pinIndex, IfxPort_Mode_outputPushPullGeneral);
@@ -83,11 +87,20 @@ void BasicPort_init(void)
 
     IfxPort_setPinMode(LED1.port, LED1.pinIndex, IfxPort_Mode_outputPushPullGeneral);
 	IfxPort_setPinPadDriver(LED1.port, LED1.pinIndex, IfxPort_PadDriver_cmosAutomotiveSpeed1);
-	setOutputPin(LED1.port, LED1.pinIndex, IR_Port.led0);
+	setOutputPin(LED1.port, LED1.pinIndex, IR_Port.led1);
 
     IfxPort_setPinMode(LED2.port, LED2.pinIndex, IfxPort_Mode_outputPushPullGeneral);
 	IfxPort_setPinPadDriver(LED2.port, LED2.pinIndex, IfxPort_PadDriver_cmosAutomotiveSpeed1);
-	setOutputPin(LED2.port, LED2.pinIndex, IR_Port.led0);
+	setOutputPin(LED2.port, LED2.pinIndex, IR_Port.led2);
+
+    IfxPort_setPinMode(LED3.port, LED3.pinIndex, IfxPort_Mode_outputPushPullGeneral);
+	IfxPort_setPinPadDriver(LED3.port, LED3.pinIndex, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+	setOutputPin(LED3.port, LED3.pinIndex, IR_Port.led3);
+
+    IfxPort_setPinMode(LED4.port, LED4.pinIndex, IfxPort_Mode_outputPushPullGeneral);
+	IfxPort_setPinPadDriver(LED4.port, LED4.pinIndex, IfxPort_PadDriver_cmosAutomotiveSpeed1);
+	setOutputPin(LED4.port, LED4.pinIndex, IR_Port.led4);
+
 
     /* Motor Port output */
 #if BOARD == APPLICATION_KIT_TC237
@@ -148,6 +161,8 @@ void BasicPort_run(void)
 	setOutputPin(LED0.port, LED0.pinIndex, IR_Port.led0);
 	setOutputPin(LED1.port, LED1.pinIndex, IR_Port.led1);
 	setOutputPin(LED2.port, LED2.pinIndex, IR_Port.led2);
+	setOutputPin(LED3.port, LED3.pinIndex, IR_Port.led3);
+	setOutputPin(LED4.port, LED4.pinIndex, IR_Port.led4);
 
     /* Motor output */
 #if BOARD == APPLICATION_KIT_TC237
@@ -203,4 +218,18 @@ void IR_setLed2(boolean led){
 		led = TRUE;
 	}
 	IR_Port.led2 = led;
+}
+
+void IR_setLed3(boolean led){
+	if(led != FALSE){
+		led = TRUE;
+	}
+	IR_Port.led3 = led;
+}
+
+void IR_setLed4(boolean led){
+	if(led != FALSE){
+		led = TRUE;
+	}
+	IR_Port.led4 = led;
 }

@@ -72,30 +72,30 @@ void STM_Int0Handler(void)
 #ifdef SIMULATION
 	IfxStm_increaseCompare(g_Stm.stmSfr, g_Stm.stmConfig.comparator, 1000);
 #else
-	IfxStm_increaseCompare(g_Stm.stmSfr, g_Stm.stmConfig.comparator, TimeConst_1ms);
+	IfxStm_increaseCompare(g_Stm.stmSfr, g_Stm.stmConfig.comparator, TimeConst_100us);
 #endif
     IfxCpu_enableInterrupts();
 
     g_Stm.counter++;
-    if(g_Stm.counter == 1000){
+    if(g_Stm.counter == 10000){
     	g_Stm.counter = 0;
     }
 
-    task_flag_1m = TRUE;
-
     if(g_Stm.counter % 10 == 0){
-    	task_flag_10m = TRUE;
+        	 task_flag_1m = TRUE;
     }
     if(g_Stm.counter % 100 == 0){
+    	task_flag_10m = TRUE;
+    }
+    if(g_Stm.counter % 1000 == 0){
         task_flag_100m = TRUE;
         BlinkLed_run();
     }
-    if(g_Stm.counter % 1000 == 0){
+    if(g_Stm.counter % 10000 == 0){
         task_flag_1000m = TRUE;
     }
 
-    appIsrCb_1ms();
-
+    appIsrCb_100us();
 }
 
 

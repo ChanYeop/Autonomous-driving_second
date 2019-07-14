@@ -32,7 +32,7 @@
 /*------------------------------Global variables------------------------------*/
 /******************************************************************************/
 IFX_EXTERN float32 IR_AdcResult[];
-
+IFX_EXTERN float32 IR_Distance[];
 	/* Usage: IR_AdcResult[USR_ADC_CHN_15_IDX] */
 
 /******************************************************************************/
@@ -40,5 +40,6 @@ IFX_EXTERN float32 IR_AdcResult[];
 /******************************************************************************/
 IFX_EXTERN void BasicVadcBgScan_init(void);
 IFX_EXTERN void BasicVadcBgScan_run(void);
+IFX_EXTERN void V2Distance(void);
 
 #endif
